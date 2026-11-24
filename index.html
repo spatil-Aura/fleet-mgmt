@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fleet Renewal Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9edf1;--ink:#1d2733;--muted:#5b6673;--line:#d5dbe1;--bar:#ffffff;--accent:#0288d1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14181d;--ink:#e6eaef;--muted:#9aa5b1;--line:#2c343d;--bar:#1c2229;--accent:#4fb3ef}}
+:root[data-theme="dark"]{--bg:#14181d;--ink:#e6eaef;--muted:#9aa5b1;--line:#2c343d;--bar:#1c2229;--accent:#4fb3ef}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+/* tester bar (not part of the design) */
+.tbar{position:sticky;top:0;z-index:100;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:9px 16px;background:var(--bar);border-bottom:1px solid var(--line)}
+.tbar b{font-size:14px}.tbar .crumb{color:var(--muted)}.tbar .sp{flex:1}
+.tbar button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+.tbar button:hover{border-color:var(--accent)}
+.tbar label{display:flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer}
+.wrap{padding:16px}
+.howto{max-width:1362px;margin:12px auto 0;padding:12px 18px;background:var(--bar);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13.5px;line-height:1.55}
+.howto[hidden]{display:none}.howto .hbtn{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:6px;padding:1px 8px;cursor:pointer}.howto .hbtn:hover{border-color:var(--accent)}.strip{display:flex;gap:8px;overflow-x:auto;margin:12px 0 2px;padding:2px 2px 8px;list-style:none}.strip li{flex:0 0 auto}.strip button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:128px;height:84px;padding:8px;font:inherit;font-size:12px;line-height:1.3;text-align:left;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;cursor:pointer}.strip button:hover,.strip button:focus-visible{border-color:var(--accent)}.strip button[aria-current="true"]{border:2px solid var(--accent);padding:7px}.strip .fn{font-size:11px;color:var(--muted)}.strip .pp{font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-left:4px}.howto ol{margin:0 0 6px;padding-left:1.3em}.howto p{margin:0;color:var(--muted)}
+@media (max-width:1394px){.howto{margin:12px 16px 0}}
+.site{max-width:1362px;margin:0 auto;background:#fff;color:#343434;border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.12);font-family:Inter,"Open Sans",Arial,sans-serif;position:relative}
+
+/* ---------- site chrome (from the Figma frames) ---------- */
+.hdr{background:#022f5f;color:#fff;display:flex;align-items:center;height:90px;padding:0 52px}
+.hdr .logo{display:flex;align-items:center;gap:12px;font:600 13px/1.2 Inter,sans-serif}
+.hdr .logo img{height:54px;display:block}
+.hdr .sp{flex:1}
+.hdr .util{display:flex;align-items:center;gap:22px;font:600 13.5px Inter,sans-serif;border-left:1px solid #2a4f7c;border-right:1px solid #2a4f7c;height:100%;padding:0 20px}
+.hdr .util span,.hdr .help,.hdr .signout{display:flex;align-items:center;gap:6px;cursor:pointer}
+.hdr svg{width:20px;height:20px;fill:#fff}
+.hdr .help{margin:0 20px 0 22px}.hdr .help svg{fill:#fff;width:22px;height:22px}
+.hdr .signout{border:1px solid #fff;border-radius:100px;padding:5px 14px;font:500 16px Inter,sans-serif}
+.nav{background:#f5f5f5;display:flex;justify-content:space-around;align-items:center;height:68px;box-shadow:0 2px 3px rgba(0,0,0,.12);position:relative;z-index:2}
+.nav span{font:600 18px Inter,sans-serif;color:#022f5f;cursor:pointer;display:flex;align-items:center;gap:6px}
+.mm{position:absolute;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:1200px;display:none;background:#fff;border:1px solid rgba(2,47,95,.5);box-shadow:0 0 12px rgba(0,0,0,.3);padding:16px 24px 20px;z-index:20}.mm:not([hidden]){display:grid;grid-template-columns:repeat(4,1fr);gap:24px}.mmc>div+div{margin-top:28px}.mm h3{margin:0 0 8px;font:600 20px Inter,sans-serif;color:#022f5f}.mm ul{list-style:none;margin:0;padding:0}.mm li{break-inside:avoid}.mm a{display:block;padding:5px 0;font:400 15px Inter,sans-serif;color:#0288d1;text-decoration:none;border-radius:3px}.mm a:hover,.mm a:focus{text-decoration:underline}
+.nav span::after{content:"";width:7px;height:7px;border:solid #022f5f;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translateY(-3px)}
+.ftr{background:#e9edf1;display:flex;align-items:center;gap:20px;padding:24px 90px 22px;font:13px "Open Sans",sans-serif;color:#222;flex-wrap:wrap;margin-top:48px}
+.ftr img{height:28px}
+.ftr a{color:#1a4f8b;text-decoration:underline;cursor:pointer}
+.ftr .lang{margin-left:auto;display:flex;flex-direction:column;gap:3px}
+.ftr .lang span{border:1px solid #c8c8c8;background:#fff;border-radius:5px;padding:7px 14px;width:214px;font-size:14px}
+.ftr .lang small{font-size:11px;color:#555}
+
+/* ---------- page type (computed styles from the live site) ---------- */
+.page{padding:0 58px}
+.ttl{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid #d6d6d6;padding:22px 6px 14px;margin-bottom:26px}
+h1{font:600 32px/1.3 Roboto,"Open Sans",sans-serif;color:#28588b;margin:0}
+h2{font:600 24px Roboto,"Open Sans",sans-serif;color:#28588b;margin:0}
+p.body{font:400 18px/1.7 Inter,"Open Sans",sans-serif;color:#343434;margin:0 0 22px;max-width:740px;padding-left:14px}
+a.lnk,.lnk{color:#0288d1;text-decoration:underline;cursor:pointer;background:none;border:0;padding:0;font:inherit}
+.learn{display:inline-flex;align-items:center;gap:4px;font:400 16px Inter,sans-serif;margin:18px 0 0 12px}
+.learn svg{width:13px;height:13px;fill:#0288d1}
+
+/* buttons */
+.btn{font:500 16px Inter,sans-serif;border-radius:10px;padding:6px 25px;min-height:37px;border:1px solid #0288d1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.btn--primary{background:#0288d1;color:#fff}
+.btn--primary:hover{background:#0277bd}
+.btn--default{background:#fff;color:#0288d1}
+.btn--default:hover{background:#f1f8fd}
+.btn:disabled{background:#a6a6a6;border-color:#a6a6a6;color:#e6e6e6;cursor:not-allowed}
+.btn--default:disabled{background:#f4f4f4;border-color:#c8c8c8;color:#a0a0a0}
+.btn svg{width:18px;height:18px;fill:currentColor;flex:none}
+.pill{font:500 16px Inter,sans-serif;border-radius:100px;padding:3px 25px;border:1px solid #0288d1;cursor:pointer;line-height:22.86px}
+.pill.sm{font-size:14px;padding:3px 14px}
+.addlink{display:inline-flex;align-items:center;gap:5px;font:500 14px Inter,sans-serif;color:#0288d1;background:none;border:0;cursor:pointer}
+.addlink svg{width:20px;height:20px;fill:#0288d1}
+
+/* tables */
+.tblwrap{overflow:visible}
+table.mvd .lnk{text-decoration:none}table.mvd .lnk:hover{text-decoration:underline}
+table.mvd{width:100%;border-collapse:collapse;font:400 14px "Open Sans",sans-serif;color:#333}
+table.mvd th{background:#28588b;color:rgba(255,255,255,.95);font-weight:700;text-align:left;padding:9px 12px;border:1px solid #3f71a7;white-space:nowrap}
+table.mvd th.sort{cursor:pointer;user-select:none}
+table.mvd th .arr{display:inline-block;margin-left:6px;opacity:.95;font-weight:400}
+table.mvd td{padding:9px 12px;border:1px solid #c8c8c8;vertical-align:middle}
+table.mvd tbody tr:nth-child(even) td{background:#f9f9f9}
+.tblhead{display:flex;align-items:center;justify-content:space-between;margin:34px 0 10px;padding-left:2px}
+.filter{background:#fff;color:#333;border:1px solid #c8c8c8;border-radius:5px;padding:4px 10px;height:35px;width:185px;font:14px "Open Sans",sans-serif;color-scheme:light}.filter::placeholder{color:#757575}
+.plate{display:inline-flex;align-items:center;gap:6px}
+.plate i{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:68px;height:34px;background:#9b9b9b;border:1px solid #7d7d7d;border-radius:3px;color:#fff;font:600 13px/1 "Open Sans",sans-serif;font-style:normal;letter-spacing:.5px}
+.plate i small{font-size:5px;letter-spacing:0;margin-top:2px;opacity:.9}
+.actions{display:flex;gap:8px}
+.pager{display:flex;justify-content:center;align-items:center;gap:2px;background:#f1f1f1;border:1px solid #c8c8c8;border-top:0;padding:6px}
+.pager button{min-width:36px;height:36px;border:0;background:transparent;color:#6c757d;font:14px "Open Sans",sans-serif;cursor:pointer;border-radius:3px}
+.pager button.on{background:#0288d1;color:#fff}
+.pager button:disabled{opacity:.4;cursor:default}
+
+/* tags (DS) */
+.tag{display:inline-block;font:600 12px/15px Inter,sans-serif;padding:3px 8px;border-radius:4px;border:1px solid}
+.tag.ok{color:#218c21;background:#deeede;border-color:rgba(33,140,33,.55)}
+.tag.need{color:#ffa600;background:#fff2d9;border-color:#ffa600}
+.tip{position:relative;display:inline-block;outline:none}
+.tip .pop{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);width:280px;background:#333;color:#fff;font:400 13px/1.45 Inter,sans-serif;padding:10px 12px;border-radius:6px;opacity:0;visibility:hidden;transition:opacity .12s;z-index:30;text-align:left;white-space:normal}
+.tip .pop::before{content:"";position:absolute;left:50%;top:-6px;margin-left:-6px;border:6px solid transparent;border-top:0;border-bottom-color:#333}
+.tip:hover .pop,.tip:focus .pop,.tip:focus-within .pop{opacity:1;visibility:visible}
+td.emis{text-align:center}
+
+/* card + fields */
+.cardhead{display:flex;align-items:flex-end;justify-content:space-between;width:746px;max-width:100%;margin-top:36px}
+.cardhead h2{margin:0 0 7px 0;line-height:1}
+.tabs{display:flex;gap:6px;margin-right:22px}
+.tab{font:500 16px Inter,sans-serif;color:#0288d1;background:#f8f8f8;border:1px solid #c8c8c8;border-bottom:0;border-radius:10px 10px 0 0;padding:8px 22px 8px 15px;display:flex;align-items:center;gap:6px;cursor:pointer;height:40px;position:relative;z-index:2;margin-bottom:-1px;height:41px}
+.tab svg{width:18px;height:18px;fill:#0288d1}
+.tab:hover{background:#eef6fc}
+.card{background:#f8f8f8;border:1px solid #c8c8c8;border-radius:15px;padding:19px 19px 4px;width:746px;max-width:100%}
+.grid{display:grid;gap:0 14px;margin-bottom:18px}
+.typehelp{margin:8px 0 0;font:400 13px/1.5 'Open Sans',sans-serif;color:#545454}.typehelp li{margin:0 0 4px}
+.fld label{display:block;font:500 14px Roboto,sans-serif;color:#676767;margin-bottom:6px}
+.fld .val{background:#ededed;border:1px solid #c8c8c8;border-radius:5px;padding:4px 10px;height:35px;display:flex;align-items:center;font:400 14px "Open Sans",sans-serif;color:#545454;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fld input{width:100%;background:#fff;border:1px solid #c8c8c8;border-radius:5px;padding:4px 10px;height:35px;font:400 14px "Open Sans",sans-serif;color:#333}
+.fld input:focus{outline:2px solid #0288d1;outline-offset:0;border-color:#0288d1}
+.fld select{width:100%;background:#fff;border:1px solid #c8c8c8;border-radius:5px;padding:4px 10px;height:35px;font:400 14px "Open Sans",sans-serif;color:#333}
+
+/* alerts */
+.alert{display:flex;align-items:flex-start;gap:12px;border-radius:10px;padding:13px 16px;font:400 16px/1.5 Inter,"Open Sans",sans-serif}
+.alert svg{width:22px;height:22px;flex:none;margin-top:1px}
+.alert.info{background:#e9edf3;border:1px solid #cfd8e3;color:#343434;max-width:100%;width:fit-content}
+.alert.info svg{fill:#1a4f8b}
+.alert.warn{background:#fffaf7;border:1px solid #fea274;color:#f05102;max-width:740px}
+.alert.warn svg{fill:#f05102}
+.alert.err{background:#f8e5e5;border:1px solid #e9b4b4;color:#a31515;max-width:1034px}
+.alert.err svg{fill:#a31515}
+.notes{margin:16px 0 0 0;font:400 15px/1.6 Inter,sans-serif;color:#343434}
+.keyrow{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.keyrow .dot{color:#a0a0a0;margin:0 12px}
+.kg{display:inline-flex;align-items:center;gap:8px}.kg .tag{min-width:76px;text-align:center}
+.fixlist{margin:0;padding-left:1.3em;max-width:1034px;font:400 16px/1.6 Inter,sans-serif;color:#343434}
+.fixlist li{margin-bottom:12px}
+.fixlist b{font-weight:600}
+.fixes{max-width:1034px;border:1px solid #c8c8c8;border-radius:10px;overflow:hidden}
+.fix{display:grid;grid-template-columns:220px 1fr;gap:16px;padding:14px 18px;font:400 15px/1.6 Inter,sans-serif;color:#343434}
+.fix + .fix{border-top:1px solid #e3e3e3}
+.fix b{font-weight:600;color:#28588b}
+@media (max-width:700px){.fix{grid-template-columns:1fr;gap:4px}}
+.notes .np{margin:0 0 14px;max-width:1180px}
+.notes .nh{display:block;font-weight:600;margin-bottom:6px}
+.nl{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.nl .tag{margin-right:4px;vertical-align:1px}
+.nt-hint{color:#676767;font-size:13px}
+.keyline{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px}
+.keyline b{font-weight:600;margin-right:2px}
+.keyline .lnk{display:inline-flex;align-items:center;gap:5px}.keyline .lnk svg{width:14px;height:14px;fill:#0288d1}
+.keyline .sep{color:#a0a0a0;margin:0 4px}
+.sentence{margin:0}
+.help{display:inline-flex;vertical-align:-2px}
+.help svg{width:15px;height:15px;fill:#0288d1}
+.err-msg{display:flex;align-items:center;gap:6px;color:#c62828;font:400 14px Inter,sans-serif;margin:10px 0 0 6px}
+.err-msg svg{width:16px;height:16px;fill:#c62828}
+
+/* fees table */
+.fees{width:740px;max-width:100%;margin-top:24px;font:400 14px "Open Sans",sans-serif;color:#333}
+.fees .r{display:flex;justify-content:flex-end;gap:12px;padding:6px 28px}
+.fees .r.first{justify-content:space-between;padding-left:28px}
+.fees .r.box{border:1px solid #c8c8c8;border-bottom-width:2px}
+.fees .r.box + .r.box{border-top:0}
+.fees .r b{font-weight:600}
+.feehelp{background:none;border:0;padding:0 0 0 6px;cursor:pointer;vertical-align:middle;line-height:0}.feehelp svg{width:18px;height:18px;fill:#0288d1}
+.btnrow{display:flex;gap:6px;margin-top:24px}
+
+/* modal (DS modal, from the Figma popup frame) */
+.ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:80px 16px 16px;overflow:auto}
+.ov[hidden]{display:none}
+.mdl{background:#fff;border-radius:15px;width:920px;max-width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);padding:26px 26px 22px;font-family:Inter,sans-serif;color:#333}
+.mdl.sm{width:600px}
+.mdl header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d6d6d6;padding:0 2px 14px}
+.mdl h3{font:600 28px Roboto,sans-serif;color:#022f5f;margin:0}
+.mdl.sm h3{font-size:24px}
+.mdl .x{background:none;border:0;cursor:pointer;padding:4px;display:flex}
+.mdl .x svg{width:26px;height:26px;fill:#9a9a9a}
+.mdl .bd{padding:18px 4px 6px;font:400 17px/1.55 Inter,sans-serif;color:#333}
+.mdl .bd .card{width:100%}
+.mdl footer{display:flex;align-items:center;gap:10px;margin-top:18px}
+.mdl footer .sp{flex:1}
+.mdl hr{border:0;border-top:1px solid #d9d9d9;margin:16px 0}
+.mdl dl{display:grid;grid-template-columns:max-content max-content;gap:6px 16px;margin:0}
+.mdl dt{font-weight:600}.mdl dd{margin:0}
+
+/* toast (from the Figma "saved" frame) */
+.toast{position:fixed;right:32px;top:64px;z-index:250;display:flex;align-items:center;gap:10px;background:#eaf5ea;border:1px solid #9fd09f;color:#218c21;border-radius:10px;padding:12px 16px;font:400 14px Inter,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.12);animation:tin .2s ease}
+.toast svg{width:20px;height:20px;fill:#218c21}
+.toast.info{background:#eef4fa;border-color:#b7cde3;color:#1a4f8b}.toast.info svg{fill:#1a4f8b}
+@keyframes tin{from{opacity:0;transform:translateY(-6px)}}
+
+/* "show what changed" */
+body.marks .chg{outline:2px dashed #0288d1!important;outline-offset:3px}
+.hide{display:none!important}
+@media (max-width:900px){.tblwrap{overflow-x:auto}.page{padding:0 16px}.hdr,.ftr{padding-left:16px;padding-right:16px}.hdr .util{display:none}.nav{overflow-x:auto;justify-content:flex-start;gap:24px;padding:0 16px}.ttl{flex-direction:column;align-items:flex-start}.cardhead{flex-direction:column;align-items:flex-start}.grid{grid-template-columns:1fr 1fr!important}.grid .wide{grid-column:span 2}}
+</style>
+</head>
+<body>
+
+
+<div class="tbar">
+  <b>Fleet Renewal prototype</b><span class="crumb" id="crumb"></span>
+  <span class="sp"></span>
+  <button type="button" id="thow" aria-expanded="false" aria-controls="howto">How to test</button>
+  <button type="button" id="tback">← Back</button>
+  <button type="button" id="trestart">Restart</button>
+  <label><input type="checkbox" id="tmarks"> Show what changed</label>
+</div>
+<div class="howto" id="howto" hidden>
+  <ol>
+    <li><b>Manage</b> the fleet to open Fleet Details. Hover a <b>Needed</b> tag, try <b>Edit Number</b> and <b>Remove</b>.</li>
+    <li>Click <b>Calculate Fleet Renewal Fees</b> (Renew Now on the site). Like the site, it opens <b>Calculating Fleet Renewal Fees</b> (on the site, a notification arrives once the fees are ready). Click <b>Back</b>. In this prototype the fees are now ready, so Fleet Details adds <b>Total Fees</b> next to <b>Vehicles Being Renewed</b> and the button changes to <b>Review Fees</b>.</li>
+    <li>Click <b>Review Fees</b>. The balance is short, so the <b>Insufficient Funds</b> popup opens.</li>
+    <li>In that popup, click <b>Change Account</b> and pick <b>Fleet Operations</b>. Review Fees now goes to Fees Overview, then <b>Pay Now</b> to the confirmation.</li>
+    <li>After renewing, open the <b>Registration</b> menu at the top, click <b>Fleet Management</b>, then <b>Manage</b>. The fleet shows <b>Renewing</b> while it runs. Click <button type="button" class="hbtn" data-act="finishRenewal">Finish renewal</button> to skip ahead: the fleet becomes <b>Active</b> and <b>Registrations That Need Attention</b> appears (like the site, only once the renewal is complete). Open it and click <b>Details</b> on a vehicle.</li>
+    <li>Try <b>Remove Fleet</b> at the bottom of Fleet Details. Once a fleet is <b>Renewing</b>, Review Fees and Remove Fleet are grayed out, so click <b>Restart</b> first if you’ve already renewed.</li>
+    <li>To see <b>Change Account</b> grayed out, tick <label><input type="checkbox" id="tone"> Only one account</label>, then click <b>Review Fees</b>.</li>
+  </ol>
+  <ul class="strip" id="strip" aria-label="Jump to a frame"></ul>
+  <p>Sample data. Links that leave this flow show a short message instead. <b>Show what changed</b> outlines every proposed change.</p>
+</div>
+<div class="wrap"><div class="site" id="site">
+  <div class="hdr">
+    <div class="logo"><img src="data:image/png;base64,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" alt="AZ MVD Now"><span>Official site of the ADOT MVD</span></div>
+    <span class="sp"></span>
+    <div class="util">
+      <span data-out="Profile menu"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm0 14.2a7.2 7.2 0 0 1-6-3.22c.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08a7.2 7.2 0 0 1-6 3.22z"/></svg>My Profile ▾</span>
+      <span data-out="Cart"><svg viewBox="0 0 24 24"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM1 2v2h2l3.6 7.59-1.35 2.45A2 2 0 0 0 7 17h12v-2H7.42a.25.25 0 0 1-.25-.25l.03-.12.9-1.63h7.45a2 2 0 0 0 1.75-1.03l3.58-6.49A1 1 0 0 0 20 4H5.21l-.94-2H1zm16 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>Cart</span>
+      <span data-out="Messages"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/></svg>Messages ▾</span>
+      <span data-out="Manage Account Funds"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg><span id="hfunds">Funds: $514.40</span></span>
+    </div>
+    <span class="help" data-out="Help"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14a4 4 0 0 0-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z"/></svg></span>
+    <span class="signout" data-out="Sign Out"><svg viewBox="0 0 24 24"><path d="M10.09 15.59 11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>Sign Out</span>
+  </div>
+  <div class="nav"><span id="navreg" data-act="menu" role="button" tabindex="0" aria-expanded="false" aria-controls="mm">Registration</span><span data-out="Title menu">Title</span><span data-out="Services menu">Services</span><span data-out="My Account menu">My Account</span><span data-out="Admin menu">Admin</span></div>
+  <div class="mm" id="mm" hidden><div class="mmc"><div><h3>Registration</h3><ul><li><a href="#" data-out="Registration Renewal">Registration Renewal</a></li><li><a href="#" data-out="Plate Replacement">Plate Replacement</a></li><li><a href="#" data-out="Specialty &amp; Personalized Plates">Specialty &amp; Personalized Plates</a></li><li><a href="#" data-out="Registration Refund">Registration Refund</a></li><li><a href="#" data-out="Emissions">Emissions</a></li><li><a href="#" data-out="Replace Disability Placard">Replace Disability Placard</a></li><li><a href="#" data-out="Plate Order Status">Plate Order Status</a></li><li><a href="#" data-out="Duplicate Plate">Duplicate Plate</a></li><li><a href="#" data-out="Replacement Registration and Tab">Replacement Registration and Tab</a></li><li><a href="#" data-out="Change Plate Background">Change Plate Background</a></li><li><a href="#" data-out="Required for OHV Decal: Safe &amp; Ethical Riding in Arizona">Required for OHV Decal: Safe &amp; Ethical Riding in Arizona</a></li><li><a href="#" data-out="Manage Title &amp; Registration Mail">Manage Title &amp; Registration Mail</a></li><li><a href="#" data-out="Reinstate Registration">Reinstate Registration</a></li></ul></div><div><h3>Aircraft Registration</h3><ul><li><a href="#" data-out="Pay Aircraft Invoice">Pay Aircraft Invoice</a></li></ul></div></div><div class="mmc"><div><h3>Permits</h3><ul><li><a href="#" data-out="30 Day General Use Permit">30 Day General Use Permit</a></li><li><a href="#" data-out="Restricted 3-Day Permit">Restricted 3-Day Permit</a></li></ul></div></div><div class="mmc"><div><h3>Insurance</h3><ul><li><a href="#" data-out="Check Insurance Status">Check Insurance Status</a></li><li><a href="#" data-out="De-Insure (Notify MVD of Paused Insurance)">De-Insure (Notify MVD of Paused Insurance)</a></li></ul></div></div><div class="mmc"><div><h3>Fleet</h3><ul><li><a href="#" data-act="menuFleet">Fleet Management</a></li></ul></div></div></div>
+  <div id="toastHost"></div>
+  <main class="page" id="page"></main>
+  <div class="ftr">
+    <img src="data:image/png;base64,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" alt="Arizona Department of Transportation">
+    <span>All Rights Reserved.</span>
+    <a data-out="Forms and Publications">Forms and Publications</a><a data-out="Privacy Statement">Privacy Statement</a><a data-out="Help">Help</a><a data-out="Contact MVD">Contact MVD</a><a data-out="Text Message Policy">Text Message Policy</a>
+    <div class="lang"><span>Select Language</span><small>Powered by Google Translate</small></div>
+  </div>
+</div></div>
+<div class="ov" id="ov" hidden></div>
+
+<script>
+/* ---------------- data (Figma frames; extra rows fill the fleet to 34) ---------------- */
+const fmt = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const BASE = [
+  ['2024 Kia SELTOS','CJ98261','No',83],['2022 Toyota Camry','CJ98262','Yes',147],['2021 Honda Civic','CJ98263','No',205],
+  ['2023 Ford F-150','CJ98264','Yes',62],['2020 Chevrolet Malibu','CJ98265','No',319],['2019 Nissan Altima','CJ98266','Yes',94],
+  ['2018 BMW 3 Series','CJ98267','No',428],['2023 Tesla Model 3','CJ98268','No',156],['2021 Hyundai Tucson','CJ98269','Yes',271],
+  ['2022 Mazda CX-5','CJ98270','No',38],
+  ['2019 Ford Transit Connect','CJ98271','Yes',112],['2020 Ram ProMaster','CJ98272','Yes',97],['2021 Chevrolet Silverado','CJ98273','No',301],
+  ['2017 Ford E-350','CJ98274','Yes',58],['2022 Toyota Tacoma','CJ98275','Yes',176],['2018 GMC Savana','CJ98276','No',240],
+  ['2023 Nissan Frontier','CJ98277','Yes',133],['2020 Isuzu NPR','CJ98278','Yes',415],['2019 Mercedes Sprinter','CJ98279','No',88],
+  ['2021 Ford Ranger','CJ98280','Yes',207],['2016 Chevrolet Express','CJ98281','No',19],['2022 Honda Ridgeline','CJ98282','Yes',350],
+  ['2020 Toyota Tundra','CJ98283','Yes',73],['2018 Ford F-250','CJ98284','No',264],['2023 Ram 1500','CJ98285','Yes',141],
+  ['2019 Nissan NV200','CJ98286','No',''],['2021 GMC Sierra','CJ98287','Yes',388],['2017 Ram ProMaster City','CJ98288','No',45],
+  ['2022 Ford Transit','CJ98289','Yes',199],['2020 Chevrolet Colorado','CJ98290','No',122],['2018 Toyota Hiace','CJ98291','Yes',''],
+  ['2021 Mercedes Metris','CJ98292','No',276],['2019 Ford F-150','CJ98293','No',51],['2023 Chevrolet Express','CJ98294','No',333]
+].map((r, i) => ({id: i + 1, name: r[0], plate: r[1], done: r[2] === 'Yes', num: typeof r[3] === 'number' ? String(r[3]) : '', exp: '03/31/2027'}));
+const FAILED = [
+  {name: '2016 Ford Transit', plate: 'CJ98261', vin: '1FTYR3XV5GKA68210', num: '86', exp: '10/31/2026', err: 'Emissions compliance is required for this vehicle.'},
+  {name: '2011 Chevrolet Express G3500', plate: 'CG75779', vin: '1GB3G3CL8B1105593', num: '64', exp: '10/31/2026', err: 'Emissions compliance is required for this vehicle.'},
+  {name: '2014 Ford Econoline', plate: 'CJ03374', vin: '1FDWE3FL6EDA21877', num: '79', exp: '10/31/2026', err: 'Emissions test record is incomplete.'}
+];
+const ACCOUNTS = [
+  {name: 'Primary (Primary Account)', short: 'Primary Account', number: '431162', balance: 514.40},
+  {name: 'Fleet Operations (Business Account)', short: 'Fleet Operations', number: '431175', balance: 2150.00}
+];
+const TOTAL = 771.08, BEING_RENEWED = 17;
+let S;
+function fresh() {
+  S = {screen: 'list', vehicles: BASE.map(v => ({...v})), acct: 0, fleets: [{exp: '08/31/2026', type: 'Permanent Fleet Registration', status: 'Active', main: true}],
+       page: 1, q: '', sort: null, fpage: 1, fq: '', fsort: null, failedIdx: 0, hist: [], renewed: false, done: false, feesReady: false};
+}
+fresh();
+
+/* ---------------- icons ---------------- */
+const I = {
+  info: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>',
+  warn: '<svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>',
+  err: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>',
+  help: '<svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14a4 4 0 0 0-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5a4 4 0 0 0-4-4z"/></svg>',
+  edit: '<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>',
+  dl: '<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>',
+  trash: '<svg viewBox="0 0 24 24"><path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM19 4H15.5L14.5 3H9.5L8.5 4H5V6H19V4Z"/></svg>',
+  xc: '<svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+  add: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>',
+  ok: '<svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>',
+  nt: '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#0288d1;vertical-align:-2px;margin-left:3px" aria-label="opens in a new tab"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>'
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+let ONE = false;
+const acctList = () => ONE ? ACCOUNTS.slice(0, 1) : ACCOUNTS;
+const acct = () => ACCOUNTS[S.acct];
+const short = () => acct().balance < TOTAL;
+
+/* ---------------- shared pieces ---------------- */
+const title = (t, chg) => `<div class="ttl"><h1${chg ? ' class="chg"' : ''}>${t}</h1></div>`;
+const learn = (t, out) => `<div><button type="button" class="lnk learn" data-out="${out}">${I.help.replace('<svg', '<svg aria-hidden="true"')}<span>${t}</span></button></div>`;
+const plate = p => `<span class="plate"><i>${p}<small>PLATE IMAGE NOT AVAILABLE</small></i>Commercial Vehicle</span>`;
+const today = () => new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'});
+const fleetActive = () => ((S.fleets.find(f => f.main) || {}).status || 'Active') === 'Active';
+const attnBtn = (st = 'margin:16px 0 0') => S.renewed && S.done && FAILED.length ? `<div style="${st}"><button type="button" class="btn btn--default chg" data-act="go" data-to="failed">Registrations That Need Attention</button></div>` : '';
+const fld = (label, val, cls = '') => `<div class="fld ${cls}"><label>${label}</label><div class="val">${esc(val)}</div></div>`;
+
+/* ---------------- screens ---------------- */
+const SCREENS = {
+  list() {
+    const rows = S.fleets.map((f, i) => `<tr><td>${f.exp}</td><td>${f.main ? S.vehicles.length : 0}</td><td>${f.type}</td><td>${f.status}</td>
+      <td><button type="button" class="pill btn--primary chg" data-act="openFleet" data-i="${i}">Manage</button></td></tr>`).join('')
+      || '<tr><td colspan="5">No fleets found. Add a fleet to get started.</td></tr>';
+    return title('Fleet Management') + `
+      <p class="body">A fleet lets you register multiple vehicles with the same expiration date—no more tracking different renewal times. You can create a new fleet if you own two or more vehicles. All vehicles in your fleet account share one expiration date.</p>
+      <p class="body">Your current fleets are listed below. To add a vehicle to a fleet, the vehicle’s registration needs to be active or within 90 days of its expiration date.</p>
+      <div class="tblhead"><h2>Fleets</h2><button type="button" class="addlink" data-act="addFleet">${I.add}Add New Fleet</button></div>
+      <div class="tblwrap"><table class="mvd"><thead><tr><th style="width:25%">Fleet Expiration <span class="arr">↑↓</span></th><th style="width:20%">Vehicles in Fleet</th><th>Fleet Type</th><th style="width:10%">Status</th><th class="chg" style="width:12%">Manage Fleet</th></tr></thead><tbody>${rows}</tbody></table></div>
+      ${learn('Learn more about Fleet Management.', 'Fleet Management help')}`;
+  },
+  details() {
+    const a = acct();
+    let vs = S.vehicles.filter(v => !S.q || (v.name + ' ' + v.plate + ' ' + v.num + ' ' + v.exp + ' ' + (v.done ? 'complete' : 'needed')).toLowerCase().includes(S.q.toLowerCase()));
+    if (S.sort) {
+      const [k, d] = S.sort;
+      const key = {plate: v => v.plate, exp: v => v.exp, emis: v => (v.done ? 1 : 0), num: v => (v.num === '' ? -1 : +v.num)}[k];
+      vs = [...vs].sort((x, y) => (key(x) > key(y) ? 1 : key(x) < key(y) ? -1 : 0) * d);
+    }
+    const pages = Math.max(1, Math.ceil(vs.length / 10));
+    S.page = Math.min(S.page, pages);
+    const pv = vs.slice((S.page - 1) * 10, S.page * 10);
+    const arr = k => `<span class="arr">${S.sort && S.sort[0] === k ? (S.sort[1] > 0 ? '↑' : '↓') : '↑↓'}</span>`;
+    const tag = v => v.done ? '<span class="tag ok">Complete</span>'
+      : `<span class="tip" tabindex="0"><span class="tag need">Needed</span><span class="pop" role="tooltip">No passing emissions test on file for this vehicle.</span></span>`;
+    const rows = pv.map(v => `<tr><td><button type="button" class="lnk" data-out="Vehicle record for ${esc(v.name)}">${esc(v.name)}</button></td><td>${plate(v.plate)}</td><td>${v.exp}</td>
+      <td class="emis">${tag(v)}</td><td>${esc(v.num)}</td>
+      <td><div class="actions"><button type="button" class="pill sm btn--default" data-act="editNum" data-id="${v.id}">Edit Number</button><button type="button" class="pill sm btn--default" data-act="removeVehicle" data-id="${v.id}">Remove</button></div></td></tr>`).join('')
+      || '<tr><td colspan="6">No records found</td></tr>';
+    const pbtn = (lbl, p, dis, on) => `<button type="button" ${dis ? 'disabled' : ''} class="${on ? 'on' : ''}" data-act="page" data-p="${p}" aria-label="Page ${lbl}">${lbl}</button>`;
+    let pager = pbtn('«', 1, S.page === 1) + pbtn('‹', S.page - 1, S.page === 1);
+    for (let p = 1; p <= pages; p++) pager += pbtn(p, p, false, p === S.page);
+    pager += pbtn('›', S.page + 1, S.page === pages) + pbtn('»', pages, S.page === pages);
+    return title('Fleet Management', true) + `
+      <div class="alert info">${I.info}<span>Vehicles that require emissions testing aren't automatically selected for renewal. You can renew them separately after emissions testing is complete.</span></div>
+      <div class="notes chg"><p class="np" style="margin:0">Check each vehicle’s emissions status in the table below. <button type="button" class="lnk" data-out="Emissions page (opens in a new tab)">Learn how to get an emissions test</button>${I.nt}</p></div>
+      ${attnBtn()}
+      <div class="cardhead"><h2>Fleet Details</h2><div class="tabs"><button type="button" class="tab chg" data-act="changeAccount">Change Account</button></div></div>
+      <div class="card">
+        <div class="grid" style="grid-template-columns:105px 1fr 210px">${fld('Expiration Date', S.done ? '10/31/2027' : '10/31/2026')}${fld('Customer Account', a.name)}${fld('Customer Number', a.number)}</div>
+        <div class="grid" style="grid-template-columns:105px 153px 153px 1fr">${fld('Fleet Status', (S.fleets.find(f => f.main) || {}).status || 'Active')}${fld('Date Last Renewed', S.done ? today() : '08/31/2026')}${fld('Vehicles in Fleet', S.vehicles.length)}${fld('Fleet Type', 'Permanent Fleet Registration')}</div>
+        <div class="grid" style="grid-template-columns:${S.feesReady ? '153px 153px max-content' : '153px max-content'}">${fld('Account Balance', fmt(a.balance))}${S.feesReady ? fld('Total Fees', fmt(TOTAL)) : ''}${S.done ? '' : fld('Vehicles Being Renewed', BEING_RENEWED, 'chg')}</div>
+        <div style="margin:4px 0 22px">${S.done ? '' : S.feesReady
+          ? `<button type="button" class="btn btn--primary chg" data-act="continueRenewal" ${fleetActive() ? '' : 'disabled'}>Review Fees</button>`
+          : `<button type="button" class="btn btn--primary chg" data-act="go" data-to="calc" ${fleetActive() ? '' : 'disabled'}>Calculate Fleet Renewal Fees</button>`}</div>
+      </div>
+      <div class="tblhead"><h2>Vehicles in Fleet</h2><div style="display:flex;align-items:center;gap:20px"><button type="button" class="addlink chg" data-act="csv">${I.dl}Download CSV</button><input class="filter" id="filter" placeholder="Filter..." value="${esc(S.q)}" aria-label="Filter vehicles"></div></div>
+      <div class="tblwrap"><table class="mvd"><thead><tr><th>Vehicle</th><th class="sort" data-act="sort" data-k="plate">License Plate ${arr('plate')}</th><th class="sort" data-act="sort" data-k="exp">Expiration ${arr('exp')}</th>
+        <th class="sort chg" data-act="sort" data-k="emis" style="text-align:center">Emissions Needed? ${arr('emis')}</th><th class="sort" data-act="sort" data-k="num">Owner Equipment Number ${arr('num')}</th><th class="chg">Vehicle Actions</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+      <div class="pager">${pager}</div>
+      <div style="margin-top:26px"><button type="button" class="btn btn--default chg" data-act="removeFleet" ${fleetActive() ? '' : 'disabled'}>${I.trash}Remove Fleet</button></div>
+      ${learn('Learn more about Fleet Management.', 'Fleet Management help')}`;
+  },
+  fees() {
+    const a = acct(), sh = short();
+    return title('Fleet Management', true) + `
+      <p class="body chg">Please review the information below. Your Fleet Renewal will be completed and your new registration will be mailed to you.</p>
+      <div class="alert warn">${I.warn}<span><b>*Please note:</b> Fleet Renewal must be purchased with your account funds/balance. <button type="button" class="lnk chg" data-out="Add Funds">Add money to your account.</button></span></div>
+      <h2 style="margin:30px 0 14px 2px">Fleet</h2>
+      <div class="card" style="width:740px;padding:22px 19px 10px">
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;row-gap:20px">
+          ${['Expiration Date|10/31/2026', 'Customer Account|' + a.short, 'Fleet Status|Active', 'Vehicles in Fleet|' + S.vehicles.length, 'Vehicles Being Renewed|' + BEING_RENEWED, 'Fleet Type|Permanent Fleet Registration', 'Date Last Renewed|08/31/2026'].map(x => {
+            const [l, v] = x.split('|');
+            const h = l === 'Vehicles Being Renewed' ? ` <span class="tip help chg" tabindex="0" aria-label="Why some vehicles aren’t included">${I.help}<span class="pop" role="tooltip">Vehicles that need emissions testing aren’t included. You can renew them separately.</span></span>` : '';
+            return `<div><div style="font:500 14px Roboto,sans-serif;color:#676767;margin-bottom:4px">${l}${h}</div><div style="font:400 16px Inter,sans-serif;color:#343434">${v}</div></div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="fees">
+        <div class="r first"><span>Fleet Renewal</span><span>${fmt(TOTAL)}</span></div>
+        <div class="r box" style="align-items:center"><b style="display:inline-flex;align-items:center">Total Amount:<button type="button" class="feehelp chg" data-act="feeInfo" aria-label="About the Total Amount">${I.help}</button></b><span>${fmt(TOTAL)}</span></div>
+        <div class="r box"><b>Account Balance:</b><span>${fmt(a.balance)}</span></div>
+      </div>
+      ${sh ? `<div class="err-msg chg">${I.err}Insufficient funds to complete this renewal.</div>` : ''}
+      <div class="btnrow"><button type="button" class="btn btn--default" data-act="back">Back</button>
+        <button type="button" class="btn btn--primary chg" data-act="renew" ${sh ? 'disabled' : ''}>Pay Now</button></div>
+      ${learn('Learn more about Fleet Renewal Fees.', 'Fleet Renewal Fees help')}`;
+  },
+  failed() {
+    let fs = FAILED.map((v, i) => ({...v, i})).filter(v => !S.fq || [v.name, v.plate, v.vin, v.num, v.exp, v.err].join(' ').toLowerCase().includes(S.fq.toLowerCase()));
+    if (S.fsort) {
+      const [k, d] = S.fsort;
+      const key = {plate: v => v.plate, exp: v => v.exp, num: v => (v.num === '' ? -1 : +v.num)}[k];
+      fs = [...fs].sort((x, y) => (key(x) > key(y) ? 1 : key(x) < key(y) ? -1 : 0) * d);
+    }
+    const pages = Math.max(1, Math.ceil(fs.length / 10));
+    S.fpage = Math.min(S.fpage, pages);
+    const pv = fs.slice((S.fpage - 1) * 10, S.fpage * 10);
+    const arr = k => `<span class="arr">${S.fsort && S.fsort[0] === k ? (S.fsort[1] > 0 ? '↑' : '↓') : '↑↓'}</span>`;
+    const rows = pv.map(v => `<tr><td><button type="button" class="lnk" data-act="exception" data-i="${v.i}">${esc(v.name)}</button></td><td>${plate(v.plate)}</td><td>${v.exp}</td><td>${v.num}</td>
+      <td><button type="button" class="pill btn--default" data-act="exception" data-i="${v.i}">Details</button></td></tr>`).join('')
+      || '<tr><td colspan="5">No records found</td></tr>';
+    const pbtn = (lbl, p, dis, on) => `<button type="button" ${dis ? 'disabled' : ''} class="${on ? 'on' : ''}" data-act="fpage" data-p="${p}" aria-label="Page ${lbl}">${lbl}</button>`;
+    let pager = pbtn('«', 1, S.fpage === 1) + pbtn('‹', S.fpage - 1, S.fpage === 1);
+    for (let p = 1; p <= pages; p++) pager += pbtn(p, p, false, p === S.fpage);
+    pager += pbtn('›', S.fpage + 1, S.fpage === pages) + pbtn('»', pages, S.fpage === pages);
+    return title('Registrations That Need Attention') + `
+      <p class="body chg" style="max-width:1000px">We’re unable to renew the vehicles below with your fleet. Review each vehicle’s details to see what’s needed, then renew them individually once resolved.</p>
+      <div class="tblhead" style="max-width:1040px"><h2>Vehicles to Renew</h2><input class="filter chg" id="filter" placeholder="Filter..." aria-label="Filter vehicles" value="${esc(S.fq)}"></div>
+      <div class="tblwrap" style="max-width:1040px"><table class="mvd"><thead><tr><th>Vehicle</th><th class="sort chg" data-act="fsort" data-k="plate">License Plate ${arr('plate')}</th><th class="sort chg" data-act="fsort" data-k="exp">Registration Expiration ${arr('exp')}</th><th class="sort chg" data-act="fsort" data-k="num">Owner Equipment Number ${arr('num')}</th><th>Details</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="pager chg">${pager}</div></div>
+      <div style="margin-top:26px"><button type="button" class="btn btn--default" data-act="go" data-to="details">See Fleet Details</button></div>`;
+  },
+  exception() {
+    const v = FAILED[S.failedIdx];
+    const L = (t, out) => `<button type="button" class="lnk" data-out="${out}">${t}</button>${I.nt}`;
+    return title('Registrations That Need Attention', true) + `
+      <div class="alert err" style="margin:0 0 26px">${I.err}<span>This vehicle has issues that need to be resolved before it can be renewed.</span></div>
+      <h2 style="margin:0 0 14px 2px">Vehicle Details</h2>
+      <div class="card" style="width:1034px">
+        <div class="grid" style="grid-template-columns:1fr 310px">${fld('Year/Make/Model', v.name)}${fld('VIN', v.vin)}</div>
+        <div class="grid" style="grid-template-columns:310px 310px">${fld('License Plate', v.plate + ' (Commercial Vehicle)')}${fld('Plate/Registration Expiration', v.exp)}</div>
+      </div>
+      <div class="tblhead"><h2>Issues</h2></div>
+      <div class="tblwrap" style="max-width:1034px"><table class="mvd"><thead><tr><th>Issues</th></tr></thead><tbody><tr><td>${esc(v.err)}</td></tr></tbody></table></div>
+      <h2 style="margin:34px 0 12px 2px">How to fix common issues</h2>
+      <ul class="fixlist chg">
+        <li><b>Emissions testing needed:</b> Take this vehicle to an emissions testing station. Results are sent to MVD automatically, then you can renew. ${L('Find a testing station', 'Emissions testing stations (new tab)')}</li>
+        <li><b>Insurance expired:</b> If the vehicle has active insurance, add it under ${L('Services &gt; Manage Insurance', 'Manage Insurance (new tab)')}, then renew.</li>
+        <li><b>Any other issue:</b> Contact MVD to resolve it. ${L('Find MVD office locations', 'MVD office locations (new tab)')}</li>
+      </ul>
+      <div style="margin-top:26px"><button type="button" class="btn btn--default" data-act="back">Back</button></div>`;
+  },
+  calc() {
+    return title('Calculating Fleet Renewal Fees') + `
+      <p class="body">Thank you for renewing your fleet. We are currently processing all your vehicles' registration renewal fees to obtain the total fleet renewal cost. You will receive a notification and in-app message when the fleet renewal fees are calculated.</p>
+      <p class="body">Thank you for using AZ MVD Now.</p>
+      <div style="margin-top:26px"><button type="button" class="btn btn--default" data-act="calcBack">Back</button></div>
+      ${learn('Learn more about Fleet Renewal Fees.', 'Fleet Renewal Fees help')}`;
+  },
+  removed() {
+    return title('Your fleet has been removed from your account.') + `
+      <p class="body chg">The vehicle registrations are no longer linked to a fleet. The registration renewal dates have not changed and they must now be renewed individually.</p>
+      <button type="button" class="btn btn--primary chg" data-act="go" data-to="list">Return to Fleet Management</button>`;
+  },
+  confirmation() {
+    const a = acct();
+    return title('Fleet Renewal Confirmation') + `
+      <p class="body">You will receive a notification when the renewal is complete or if any errors have occurred.</p>
+      <p class="body">Below is your Fleet Renewal Confirmation and receipt. Thank you for using AZ MVD Now.</p>
+      <h2 style="margin:10px 0 14px 2px">What's Next?</h2>
+      <ul class="fixlist"><li><button type="button" class="lnk" data-out="AZ MVD Now Home">Go to AZ MVD Now Home</button></li></ul>
+      <h2 style="margin:34px 0 14px 2px;display:flex;align-items:center;gap:12px"><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyNi4wLjIsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHdpZHRoPSIyNTZweCIgaGVpZ2h0PSIxNTVweCIgdmlld0JveD0iMCAwIDI1NiAxNTUiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDI1NiAxNTU7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+DQoJLnN0MHtmaWxsOiMwRDFGNTk7fQ0KPC9zdHlsZT4NCjxnPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xMDgsNjEuNGgtMC4ybC0xNy4yLDU0LjVINzUuOEw1OC41LDYxLjRoLTAuM2wtMi45LDU0LjVIMzYuOWw2LTgwaDIzLjZsMTYuNyw1Mi42aDAuMmwxNi41LTUyLjZoMjYuNmwwLDBWMjcNCgkJdi04LjRWMC4yTDI0LDAuMWwtMS42LDIxLjNsLTIuMiwzLjdoLTIuM2wtNC4zLTMuNmwtNi4yLDEuN2wtMC4zLDQuM2wyLjMsMjAuM2wtMi43LDEuNWwwLjcsMTEuOGw5LjEsOS4xVjczbC01LjIsNC45TDksOTEuNA0KCQlsLTUuMyw0LjhsMC42LDcuM2w0LjEsMi4xbDAuNiw0LjNsLTIuOCwzbC0zLjEtMC4xbC0yLjcsNS43bDc1LjgsMzYuNGg1MC4zdi0zNi4zdi0yLjdoLTE1LjRMMTA4LDYxLjR6IE02My4yLDI1bDguMi0xMC43aC04di0zLjINCgkJaDEzLjN2Mi43bC04LjYsMTAuOWg4LjZWMjhINjMuMlYyNXogTTUwLjcsMTFoNC4ybDYuMywxNi44aC00LjNsLTEuMi0zLjRoLTZsLTEuMiwzLjRoLTQuMUw1MC43LDExeiIvPg0KCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iNTIuOCwxNS40IDUwLjcsMjEuNCA1NC45LDIxLjQgCSIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xNTYuNiwxMzguNGMwLDMuMSwwLjEsNi40LDAuMSw2LjRsLTEyLjYtMTkuN2gtNy4zdjI5LjNoNi43di0xMy4yYzAtMy4xLTAuMS02LjYtMC4xLTYuNmwxMi44LDE5LjhoN3YtMjkuMw0KCQloLTYuN3YxMy4zSDE1Ni42eiIvPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xODEuMywxMjQuN2MtOC43LDAtMTUuNSw1LjctMTUuNSwxNS4xYzAsOS41LDYuOCwxNS4xLDE1LjUsMTUuMXMxNS41LTUuNiwxNS41LTE1LjENCgkJQzE5Ni44LDEzMC40LDE5MC4xLDEyNC43LDE4MS4zLDEyNC43eiBNMTgxLjMsMTQ4LjhjLTQuOSwwLTguNi0zLjYtOC42LTkuMmMwLTUuNiwzLjctOS4xLDguNi05LjFjNC45LDAsOC42LDMuNiw4LjYsOS4xDQoJCUMxODkuOSwxNDUuMiwxODYuMywxNDguOCwxODEuMywxNDguOHoiLz4NCgk8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjIyNS45LDE0NC45IDIyMC42LDEyNS4xIDIxMy44LDEyNS4xIDIwOC40LDE0NC45IDIwMy4zLDEyNS4xIDE5Ni4zLDEyNS4xIDIwNC42LDE1NC40IDIxMS42LDE1NC40IA0KCQkyMTcuMSwxMzQuMyAyMjIuOCwxNTQuNCAyMjkuNiwxNTQuNCAyMzguMSwxMjUuMSAyMzAuOSwxMjUuMSAJIi8+DQoJPHBhdGggY2xhc3M9InN0MCIgZD0iTTIxOS4xLDM1LjloLTE0LjhsLTUuOCwxNS44aDE5LjJjMTIuMywwLDE5LjMsNi44LDE5LjMsMTguOGMwLDE3LjItMTEuMSwyOS4zLTI3LDI5LjNoLTI5LjRsLTYsMTYuMWgzMS45DQoJCWMyOS44LDAsNDkuMS0xOC45LDQ5LjEtNDguM0MyNTUuNiw0Ny44LDI0MS44LDM1LjksMjE5LjEsMzUuOXoiLz4NCgk8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjE4MC42LDIwLjIgMTU2LjQsOTAuNyAxNDUuOCw1OS42IDEyNi42LDU5LjYgMTQ3LjgsMTE1LjggMTY1LjMsMTE1LjggMjAwLjYsMjAuMiAJIi8+DQo8L2c+DQo8L3N2Zz4NCg==" width="70" alt="AZ MVD Now">Fleet Renewal</h2>
+      <div class="card" style="width:740px;padding:22px 19px 10px"><div class="grid" style="grid-template-columns:1fr 1fr 1fr;row-gap:20px">
+        ${['Previous Expiration Date|10/31/2026', 'Customer Account|' + a.short, 'Fleet Type|Permanent Fleet Registration', 'Vehicles in Fleet|' + S.vehicles.length, 'Vehicles Renewed|' + BEING_RENEWED, 'Date Renewed|' + new Date().toLocaleDateString('en-US', {month: '2-digit', day: '2-digit', year: 'numeric'}), 'Total Fees|' + fmt(TOTAL)].map(x => {
+          const [l, v] = x.split('|'); const tip = l === 'Total Fees' ? ` <span class="tip help" tabindex="0" aria-label="How you're charged">${I.help}<span class="pop" role="tooltip">Each vehicle is charged as it renews. Vehicles that don't renew aren't charged, and those funds stay in your account.</span></span>` : '';
+          return `<div${l === 'Vehicles Renewed' || l === 'Total Fees' ? ' class="chg"' : ''}><div style="font:500 14px Roboto,sans-serif;color:#676767;margin-bottom:4px">${l}${tip}</div><div style="font:400 16px Inter,sans-serif;color:#343434">${v}</div></div>`;
+        }).join('')}</div></div>`;
+  }
+};
+const NAMES = {list: 'Fleet List', details: 'Fleet Details', calc: 'Calculating Fleet Renewal Fees', fees: 'Fees Overview', failed: 'Registrations That Need Attention', exception: 'Registrations That Need Attention (one vehicle)', removed: 'Fleet Removed', confirmation: 'Fleet Renewal Confirmation'};
+
+/* ---------------- popups ---------------- */
+const ov = document.getElementById('ov');
+let MODAL = null;
+function modal(html, name, onOpen) {
+  MODAL = name; ov.innerHTML = html; ov.hidden = false; crumb();
+  const f = ov.querySelector('input,select,button:not(.x)'); (onOpen || (() => {}))(); setTimeout(() => (f || ov.querySelector('.x')).focus(), 0);
+}
+function closeModal() { ov.hidden = true; ov.innerHTML = ''; MODAL = null; crumb(); }
+const mhead = (t, chg) => `<header><h3${chg ? ' class="chg"' : ''}>${t}</h3><button type="button" class="x" data-act="close" aria-label="Close">${I.x}</button></header>`;
+const confirmBox = (t, body, okAct) => `<div class="mdl sm" role="dialog" aria-modal="true" aria-label="${t}">${mhead(t)}<div class="bd">${body}</div>
+  <footer><span class="sp"></span><button type="button" class="btn btn--default" data-act="close">Cancel</button><button type="button" class="btn btn--primary" data-act="${okAct}">Confirm</button></footer></div>`;
+const POP = {
+  editNum(v) {
+    modal(`<div class="mdl" role="dialog" aria-modal="true" aria-label="Edit Owner Equipment Number">${mhead('Edit Owner Equipment Number', true)}
+      <div class="bd"><div class="card" style="padding:19px 26px 2px">
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr">${fld('Vehicle', v.name)}${fld('License Plate', v.plate)}${fld('Expiration', v.exp)}</div>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr">${fld('Emissions Needed?', v.done ? 'Complete' : 'Needed')}
+          <div class="fld chg"><label for="numIn">Owner Equipment Number</label><input id="numIn" value="${esc(v.num)}" autocomplete="off"></div></div>
+      </div></div>
+      <footer><span class="sp"></span>
+        <button type="button" class="btn btn--default" data-act="close">Cancel</button><button type="button" class="btn btn--primary" id="saveNum" data-act="saveNum" data-id="${v.id}" disabled>Confirm</button></footer></div>`, 'Edit Owner Equipment Number');
+    const inp = document.getElementById('numIn'), sv = document.getElementById('saveNum');
+    const upd = () => { const val = inp.value.trim(); sv.disabled = val === v.num || (!val && !v.num); };
+    inp.addEventListener('input', upd); inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !sv.disabled) sv.click(); }); upd();
+  },
+  removeVehicle(v) {
+    modal(confirmBox('Remove vehicle from fleet?', 'Are you sure you want to remove the vehicle from the fleet?', 'doRemoveVehicle').replace('data-act="doRemoveVehicle"', `data-act="doRemoveVehicle" data-id="${v.id}"`), 'Remove vehicle from fleet?');
+  },
+  removeFleet() {
+    const x = I.xc;
+    modal(`<div class="mdl" role="dialog" aria-modal="true" aria-label="Remove fleet?">${mhead('Remove fleet?', true)}
+      <div class="bd chg">The vehicles in this fleet will no longer be linked to a fleet. Their registrations and expiration dates won’t change. You’ll need to renew them individually or add them to a new fleet during registration renewal.</div>
+      <footer><span class="sp"></span><button type="button" class="btn btn--default" data-act="close">Cancel</button><button type="button" class="btn btn--primary chg" data-act="doRemoveFleet">${I.trash}Remove Fleet</button></footer></div>`, 'Remove fleet?');
+  },
+  insufficient() {
+    const a = acct();
+    modal(`<div class="mdl" role="dialog" aria-modal="true" aria-label="Insufficient Funds">${mhead('Insufficient Funds', true)}
+      <div class="bd chg"><p style="margin:0 0 14px">You don’t have enough funds in your account to pay for this fleet renewal.</p>
+        <dl><dt>Current Account Balance:</dt><dd>${fmt(a.balance)}</dd><dt>Total Fees:</dt><dd>${fmt(TOTAL)}</dd></dl><hr>
+        <ul style="margin:0;padding-left:1.2em"><li class="chg"><button type="button" class="lnk" data-out="Add Funds">Add money to your account.</button></li></ul></div>
+      <footer><span class="sp"></span><button type="button" class="btn btn--default" data-act="close">Close</button><button type="button" class="btn btn--primary chg" data-act="changeAccount" ${acctList().length > 1 ? '' : 'disabled'}>Change Account</button></footer></div>`, 'Insufficient Funds');
+  },
+  changeAccount() {
+    modal(`<div class="mdl sm" role="dialog" aria-modal="true" aria-label="Fleet Account Selection">${mhead('Fleet Account Selection')}
+      <div class="bd"><p class="chg" style="margin:0 0 14px">Select an account to pay from.</p>
+        <div class="fld"><select id="acctSel" aria-label="Account">${acctList().map((a, i) => `<option value="${i}" ${i === S.acct ? 'selected' : ''}>${a.name.split(' (')[0]}: ${fmt(a.balance)}</option>`).join('')}</select></div></div>
+      <footer><span class="sp"></span><button type="button" class="btn btn--default" data-act="close">Cancel</button><button type="button" class="btn btn--primary" data-act="saveAccount">Submit</button></footer></div>`, 'Fleet Account Selection');
+  },
+  addFleet() {
+    const sel = (id, label, opts, help = '', cls = '') => `<div class="fld${cls ? ' ' + cls : ''}" style="margin-bottom:14px"><label for="${id}">${label}</label><select id="${id}"${help ? ` aria-describedby="${id}Help"` : ''}><option value="">Select…</option>${opts.map(o => `<option>${o}</option>`).join('')}</select>${help}<div class="err-msg hide" data-req="${id}">${label} is required</div></div>`;
+    const typeHelp = `<p class="typehelp chg" id="nfTypeHelp"><b>Permanent:</b> One PERM (permanent) tab and a permanent registration card issued per vehicle, which is not replaced at the time of registration renewal.</p>`;
+    modal(`<div class="mdl sm" role="dialog" aria-modal="true" aria-label="Add New Fleet">${mhead('Add New Fleet', true)}
+      <div class="bd">${sel('nfExp', 'Requested Expiration Date', ['01/31/2027', '02/28/2027', '03/31/2027', '04/30/2027'])}${sel('nfType', 'Fleet Type', ['Permanent Fleet Registration'], typeHelp)}${sel('nfAcct', 'Customer Account to Pay From', ACCOUNTS.map(a => a.name), '', 'chg')}</div>
+      <footer><span class="sp"></span><button type="button" class="btn btn--default" data-act="close">Cancel</button><button type="button" class="btn btn--primary" data-act="saveFleet">Submit</button></footer></div>`, 'Add New Fleet');
+  },
+  feeInfo() {
+    modal(`<div class="mdl sm" role="dialog" aria-modal="true" aria-label="Info">${mhead('Info', true)}
+      <div class="bd chg">The Total Amount is the total fee for this fleet renewal. To see the fees for each vehicle, request a Fee Breakdown. It will be available in your Documents tomorrow.</div>
+      <footer><span class="sp"></span><button type="button" class="btn btn--default" data-act="close">Close</button><button type="button" class="btn btn--primary" data-act="feeBreakdown">Fee Breakdown</button></footer></div>`, 'Info');
+  },
+  alert(t, body) {
+    modal(`<div class="mdl sm" role="dialog" aria-modal="true" aria-label="${t}">${mhead(t)}<div class="bd">${body}</div><footer><span class="sp"></span><button type="button" class="btn btn--primary" data-act="close">Close</button></footer></div>`, t);
+  }
+};
+
+/* ---------------- toast ---------------- */
+let tt;
+function toast(msg, kind) {
+  const h = document.getElementById('toastHost');
+  h.innerHTML = `<div class="toast ${kind || ''}" role="status">${kind === 'info' ? I.info : I.ok}<span>${msg}</span></div>`;
+  clearTimeout(tt); tt = setTimeout(() => (h.innerHTML = ''), kind === 'info' ? 3800 : 3200);
+}
+
+/* ---------------- navigation ---------------- */
+function render() {
+  document.getElementById('page').innerHTML = SCREENS[S.screen]();
+  document.getElementById('hfunds').textContent = 'Funds: ' + fmt(acct().balance);
+  crumb();
+  const f = document.getElementById('filter');
+  if (f) f.addEventListener('input', () => { if (S.screen === 'failed') { S.fq = f.value; S.fpage = 1; } else { S.q = f.value; S.page = 1; } const pos = f.selectionStart; render(); const g = document.getElementById('filter'); g.focus(); g.setSelectionRange(pos, pos); });
+}
+function crumb() { document.getElementById('crumb').textContent = '· ' + NAMES[S.screen] + (MODAL ? ' › ' + MODAL : ''); }
+function go(to) { S.hist.push(S.screen); S.screen = to; closeModal(); render(); document.getElementById('site').scrollIntoView({block: 'start'}); window.scrollTo(0, 0); }
+function back() { if (MODAL) return closeModal(); if (!S.hist.length) return; S.screen = S.hist.pop(); render(); window.scrollTo(0, 0); }
+const byId = id => S.vehicles.find(v => v.id === +id);
+
+const ACT = {
+  go: d => go(d.to),
+  back: () => back(),
+  menu: () => { const m = document.getElementById('mm'), o = m.hidden; m.hidden = !o; document.getElementById('navreg').setAttribute('aria-expanded', String(o)); },
+  menuFleet: () => { document.getElementById('mm').hidden = true; document.getElementById('navreg').setAttribute('aria-expanded', 'false'); closeModal(); go('list'); },
+  calcBack: () => { S.feesReady = true; back(); },
+  close: () => closeModal(),
+  openFleet: d => { if (S.fleets[+d.i].main) go('details'); else toast('This new fleet has no vehicles yet. Vehicles are added during each vehicle’s registration renewal.', 'info'); },
+  addFleet: () => POP.addFleet(),
+  saveFleet: () => {
+    const ids = ['nfExp', 'nfType', 'nfAcct']; let ok = true;
+    ids.forEach(id => { const miss = !document.getElementById(id).value; ov.querySelector(`[data-req="${id}"]`).classList.toggle('hide', !miss); if (miss) ok = false; });
+    if (!ok) return;
+    S.fleets.push({exp: document.getElementById('nfExp').value, type: document.getElementById('nfType').value, status: 'Active'});
+    closeModal(); render(); toast('Fleet created successfully.');
+  },
+  changeAccount: () => POP.changeAccount(),
+  saveAccount: () => { S.acct = +document.getElementById('acctSel').value; closeModal(); render(); toast('Account updated successfully.'); },
+  csv: () => toast('Download CSV saves the vehicle list as a file. (No file is saved in this prototype.)', 'info'),
+  continueRenewal: () => (short() ? POP.insufficient() : go('fees')),
+  editNum: d => POP.editNum(byId(d.id)),
+  saveNum: d => { const v = byId(d.id); v.num = document.getElementById('numIn').value.trim(); closeModal(); render(); toast('Owner Equipment Number Successfully Updated.'); },
+  clearNum: d => { const v = byId(d.id); v.num = ''; closeModal(); render(); toast('Owner Equipment Number Successfully Updated.'); },
+  removeVehicle: d => POP.removeVehicle(byId(d.id)),
+  doRemoveVehicle: d => { S.vehicles = S.vehicles.filter(v => v.id !== +d.id); closeModal(); render(); toast('Vehicle removed from fleet successfully.'); },
+  removeFleet: () => POP.removeFleet(),
+  doRemoveFleet: () => { S.fleets = S.fleets.filter(f => !f.main); closeModal(); go('removed'); },
+  sort: d => { S.sort = S.sort && S.sort[0] === d.k ? [d.k, -S.sort[1]] : [d.k, 1]; render(); },
+  page: d => { S.page = +d.p; render(); },
+  fsort: d => { S.fsort = S.fsort && S.fsort[0] === d.k ? [d.k, -S.fsort[1]] : [d.k, 1]; render(); },
+  fpage: d => { S.fpage = +d.p; render(); },
+  finishRenewal: () => { if (!S.renewed) return toast('Renew the fleet first, then finish the renewal.', 'info'); S.done = true; S.feesReady = false; S.fleets.forEach(f => { if (f.main) f.status = 'Active'; }); render(); toast('Fleet renewal complete.'); },
+  renew: () => { S.renewed = true; S.fleets.forEach(f => { if (f.main) f.status = 'Renewing'; }); go('confirmation'); },
+  feeInfo: () => POP.feeInfo(),
+  feeBreakdown: () => POP.alert('Confirmation', 'Fleet renewal calculation has been scheduled. Please check your Documents tomorrow.'),
+  exception: d => { S.failedIdx = +d.i; go('exception'); }
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('#mm, #navreg')) { const m = document.getElementById('mm'); if (m && !m.hidden) { m.hidden = true; document.getElementById('navreg').setAttribute('aria-expanded', 'false'); } }
+  const out = e.target.closest('[data-out]');
+  if (out) { e.preventDefault(); toast(out.dataset.out + ' is outside this prototype.', 'info'); return; }
+  const t = e.target.closest('[data-act]');
+  if (t && !t.disabled) { e.preventDefault(); ACT[t.dataset.act](t.dataset); }
+});
+ov.addEventListener('mousedown', e => { if (e.target === ov) closeModal(); });
+document.addEventListener('keydown', e => {
+  const m = document.getElementById('mm');
+  if (e.key === 'Escape' && m && !m.hidden) { m.hidden = true; document.getElementById('navreg').setAttribute('aria-expanded', 'false'); document.getElementById('navreg').focus(); return; }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'navreg') { e.preventDefault(); ACT.menu(); return; }
+  if (e.key === 'Escape' && MODAL) closeModal();
+});
+document.getElementById('tback').onclick = back;
+const hb = document.getElementById('thow'), hp = document.getElementById('howto');
+hb.onclick = () => { hp.hidden = !hp.hidden; hb.setAttribute('aria-expanded', String(!hp.hidden)); };
+document.getElementById('trestart').onclick = () => { closeModal(); fresh(); render(); window.scrollTo(0, 0); };
+const to = document.getElementById('tone');
+to.onchange = () => { ONE = to.checked; S.acct = 0; closeModal(); render(); };
+/* ---------------- film strip ---------------- */
+const paid = () => { S.feesReady = true; S.acct = 1; S.renewed = true; S.fleets.forEach(f => { if (f.main) f.status = 'Renewing'; }); };
+const ready = () => { S.feesReady = true; };
+const done = () => { paid(); S.done = true; S.feesReady = false; S.fleets.forEach(f => { if (f.main) f.status = 'Active'; }); };
+const FRAMES = [   // [name, screen, state, popup]
+  ['Fleet List', 'list'],
+  ['Add New Fleet', 'list', null, () => POP.addFleet()],
+  ['Fleet Details', 'details'],
+  ['Edit Owner Equipment Number', 'details', null, () => POP.editNum(S.vehicles[0])],
+  ['Remove Vehicle', 'details', null, () => POP.removeVehicle(S.vehicles[0])],
+  ['Calculating Fleet Renewal Fees', 'calc'],
+  ['Fleet Details, fees ready', 'details', ready],
+  ['Insufficient Funds', 'details', ready, () => POP.insufficient()],
+  ['Fleet Account Selection', 'details', ready, () => POP.changeAccount()],
+  ['Fees Overview', 'fees', () => { S.feesReady = true; S.acct = 1; }],
+  ['Fleet Renewal Confirmation', 'confirmation', paid],
+  ['Fleet Details, renewing', 'details', paid],
+  ['Fleet Details, renewal complete', 'details', done],
+  ['Registrations That Need Attention', 'failed', done],
+  ['Vehicle issues', 'exception', done],
+  ['Remove Fleet', 'details', null, () => POP.removeFleet()],
+  ['Fleet Removed', 'removed', () => { S.fleets = S.fleets.filter(f => !f.main); }]
+];
+let FRAME = 0;
+function drawStrip() {
+  document.getElementById('strip').innerHTML = FRAMES.map((f, i) =>
+    `<li><button type="button" data-frame="${i}" aria-current="${i === FRAME}"><span class="fn">${i + 1}${f[3] ? '<span class="pp">popup</span>' : ''}</span><span>${f[0]}</span></button></li>`).join('');
+}
+function openFrame(i) {
+  const [, scr, state, popup] = FRAMES[i];
+  closeModal(); fresh(); ONE = false; to.checked = false;
+  S.screen = scr; S.hist = scr === 'list' ? [] : ['list'];
+  if (state) state();
+  render();
+  if (popup) popup();
+  FRAME = i; drawStrip();
+  document.getElementById('site').scrollIntoView({block: 'start'});
+}
+document.getElementById('strip').addEventListener('click', e => { const b = e.target.closest('[data-frame]'); if (b) openFrame(+b.dataset.frame); });
+drawStrip();
+const tm = document.getElementById('tmarks');
+tm.onchange = () => document.body.classList.toggle('marks', tm.checked);
+render();
+</script>
+
+</body>
+</html>
